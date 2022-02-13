@@ -47,7 +47,7 @@ class ProbsAlgo:
         for i, j in zip(true_labels, predictions):
             if i == j and j == class_number:
                 true_positive += 1
-            elif i != j and j == class_number:
+            elif i != class_number and j == class_number:
                 false_positive += 1
             else:
                 pass
@@ -99,10 +99,15 @@ class ProbsAlgo:
 
     def plot_and_save_result(self, output_path: str) -> None:
         data = self.metrics
-        fig, ax = plt.subplots(len(data), 1, figsize=(10, 7))
+        fig, ax = plt.subplots(len(data), 1, figsize=(10, 7), sharex=True)
+        fig.subplots_adjust(hspace=1)
         for a, key in zip(ax, data.keys()):
             y = data[key]
             a.title.set_text(key)
+            a.tick_params(axis='y', which='major', labelsize=7)
+            a.tick_params(axis='y', which='minor', labelsize=5)
+            a.grid(True)
             a.plot(y)
+        fig.suptitle('Metrics', fontsize=16)
         plt.show()
         fig.savefig(output_path + '/' + 'image.png', dpi=fig.dpi)

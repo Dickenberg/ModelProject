@@ -9,5 +9,3 @@ parser.add_argument('--probs', '-p', type=float, nargs='+')
 args = parser.parse_args()
 algorithm_test = algorithm.ProbsAlgo(data_path=args.input_data_path, probs=args.probs, n=args.n_iterations)
 algorithm_test.plot_and_save_result(args.output_pic_path)
-
-
