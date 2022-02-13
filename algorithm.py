@@ -99,9 +99,10 @@ class ProbsAlgo:
 
     def plot_and_save_result(self, output_path: str) -> None:
         data = self.metrics
-        fig, ax = plt.subplots(len(data), 1, figsize=(7, 5))
+        fig, ax = plt.subplots(len(data), 1, figsize=(10, 7))
         for a, key in zip(ax, data.keys()):
             y = data[key]
+            a.title.set_text(key)
             a.plot(y)
         plt.show()
-        plt.savefig(output_path + '/' + 'image.png', dpi=300)
+        fig.savefig(output_path + '/' + 'image.png', dpi=fig.dpi)
