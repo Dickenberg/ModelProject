@@ -1,6 +1,5 @@
 from typing import Dict, List
 from random import choices
-
 import matplotlib.pyplot as plt
 
 
