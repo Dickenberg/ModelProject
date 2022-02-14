@@ -36,40 +36,27 @@ class ProbsAlgo:
 
     @staticmethod
     def accuracy(true_labels: List[int], predictions: List[int]) -> float:
-        true_count = 0
-        for i, j in zip(true_labels, predictions):
-            if i == j:
-                true_count += 1
-            else:
-                pass
+        assert len(true_labels) == len(predictions)
+        assert len(true_labels) > 0
+        true_count = sum(i == j for i, j in zip(true_labels, predictions))
         accuracy_score = true_count / len(predictions)
         return accuracy_score
 
     @staticmethod
     def precision(true_labels: List[int], predictions: List[int], class_number: int) -> float:
-        true_positive = 0
-        false_positive = 0
-        for i, j in zip(true_labels, predictions):
-            if i == j and j == class_number:
-                true_positive += 1
-            elif i != class_number and j == class_number:
-                false_positive += 1
-            else:
-                pass
+        assert len(true_labels) == len(predictions)
+        assert len(true_labels) > 0
+        true_positive = sum(i == j == class_number for i, j in zip(true_labels, predictions))
+        false_positive = sum(i != j and j == class_number for i, j in zip(true_labels, predictions))
         precision_score = true_positive / (true_positive + false_positive)
         return precision_score
 
     @staticmethod
     def recall(true_labels: List[int], predictions: List[int], class_number: int) -> float:
-        true_positive = 0
-        false_negative = 0
-        for i, j in zip(true_labels, predictions):
-            if i == j and j == class_number:
-                true_positive += 1
-            elif i == class_number and j != class_number:
-                false_negative += 1
-            else:
-                pass
+        assert len(true_labels) == len(predictions)
+        assert len(true_labels) > 0
+        true_positive = sum(i == j == class_number for i, j in zip(true_labels, predictions))
+        false_negative = sum(i == class_number and j != class_number for i, j in zip(true_labels, predictions))
         precision_score = true_positive / (true_positive + false_negative)
         return precision_score
 
