@@ -25,6 +25,7 @@ class ProbsAlgo:
     def make_predictions(self) -> List[List[int]]:
         predictions = []
         classes = list(range(0, len(self.probs)))
+        assert sum(self.probs) == 1, 'Sum of probs is not equal to 1'
         for i in range(0, self.n):
             prediction = choices(classes, self.probs, k=len(self.true_labels))
             predictions.append(prediction)
