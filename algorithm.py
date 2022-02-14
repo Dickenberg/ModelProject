@@ -1,5 +1,7 @@
+from collections import defaultdict
 from typing import Dict, List
 from random import choices
+
 import matplotlib.pyplot as plt
 
 
@@ -13,15 +15,18 @@ class ProbsAlgo:
         self.metrics = self.get_final_metrics()
 
     def read_file(self, path: str) -> List[int]:
-        with open(path) as file:
-            labels_list = [int(line.rstrip('\n')) for line in file][0:10000]
+        try:
+            with open(path) as file:
+                labels_list = [int(line) for line in file]
+        except FileNotFoundError:
+            print('File not found')
         return labels_list
 
     def make_predictions(self) -> List[List[int]]:
         predictions = []
-        classes = [0, 1, 2]
+        classes = list(range(0, len(self.probs)))
         for i in range(0, self.n):
-            prediction = choices(classes, self.probs, k=10**4)
+            prediction = choices(classes, self.probs, k=len(self.true_labels))
             predictions.append(prediction)
         assert len(predictions) == self.n
         for pred in predictions:
