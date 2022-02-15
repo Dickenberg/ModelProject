@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List
+from typing import DefaultDict, List
 from random import choices
 
 import matplotlib.pyplot as plt
@@ -65,7 +65,7 @@ class ProbsAlgo:
         cum_score_list = [sum(non_cum_score_list[0:i + 1]) / (i + 1) for i in range(0, len(non_cum_score_list))]
         return cum_score_list
 
-    def get_final_metrics(self) -> Dict[str, List[float]]:
+    def get_final_metrics(self) -> DefaultDict[str, List[float]]:
         metrics = defaultdict()
         metrics['accuracy'] = [self.accuracy(self.true_labels, pred) for pred in self.preds]
         for class_num in self.classes:
