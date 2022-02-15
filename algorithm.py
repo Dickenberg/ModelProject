@@ -1,5 +1,7 @@
-from typing import Dict, List
+from collections import defaultdict
+from typing import DefaultDict, List
 from random import choices
+
 import matplotlib.pyplot as plt
 
 
@@ -9,19 +11,23 @@ class ProbsAlgo:
         self.probs = probs
         self.n = n
 
+        self.classes = list(range(0, len(self.probs)))
         self.preds = self.make_predictions()
         self.metrics = self.get_final_metrics()
 
     def read_file(self, path: str) -> List[int]:
-        with open(path) as file:
-            labels_list = [int(line.rstrip('\n')) for line in file][0:10000]
+        try:
+            with open(path) as file:
+                labels_list = [int(line) for line in file]
+        except FileNotFoundError:
+            print('File not found')
         return labels_list
 
     def make_predictions(self) -> List[List[int]]:
         predictions = []
-        classes = [0, 1, 2]
-        for i in range(0, self.n):
-            prediction = choices(classes, self.probs, k=10**4)
+        assert sum(self.probs) == 1, 'Sum of probs is not equal to 1'
+        for _ in range(0, self.n):
+            prediction = choices(self.classes, self.probs, k=len(self.true_labels))
             predictions.append(prediction)
         assert len(predictions) == self.n
         for pred in predictions:
@@ -30,67 +36,45 @@ class ProbsAlgo:
 
     @staticmethod
     def accuracy(true_labels: List[int], predictions: List[int]) -> float:
-        true_count = 0
-        for i, j in zip(true_labels, predictions):
-            if i == j:
-                true_count += 1
-            else:
-                pass
+        assert len(true_labels) == len(predictions)
+        assert len(true_labels) > 0
+        true_count = sum(i == j for i, j in zip(true_labels, predictions))
         accuracy_score = true_count / len(predictions)
         return accuracy_score
 
     @staticmethod
     def precision(true_labels: List[int], predictions: List[int], class_number: int) -> float:
-        true_positive = 0
-        false_positive = 0
-        for i, j in zip(true_labels, predictions):
-            if i == j and j == class_number:
-                true_positive += 1
-            elif i != class_number and j == class_number:
-                false_positive += 1
-            else:
-                pass
+        assert len(true_labels) == len(predictions)
+        assert len(true_labels) > 0
+        true_positive = sum(i == j == class_number for i, j in zip(true_labels, predictions))
+        false_positive = sum(i != class_number and j == class_number for i, j in zip(true_labels, predictions))
         precision_score = true_positive / (true_positive + false_positive)
         return precision_score
 
     @staticmethod
     def recall(true_labels: List[int], predictions: List[int], class_number: int) -> float:
-        true_positive = 0
-        false_negative = 0
-        for i, j in zip(true_labels, predictions):
-            if i == j and j == class_number:
-                true_positive += 1
-            elif i == class_number and j != class_number:
-                false_negative += 1
-            else:
-                pass
-        precision_score = true_positive / (true_positive + false_negative)
-        return precision_score
+        assert len(true_labels) == len(predictions)
+        assert len(true_labels) > 0
+        true_positive = sum(i == j == class_number for i, j in zip(true_labels, predictions))
+        false_negative = sum(i == class_number and j != class_number for i, j in zip(true_labels, predictions))
+        recall_score = true_positive / (true_positive + false_negative)
+        return recall_score
 
-    def get_final_metrics(self) -> Dict[str, List[float]]:
-        metrics = dict()
-        list_accuracy = [self.accuracy(self.true_labels, self.preds[i]) for i in range(0, self.n)]
-        list_precision_0 = [self.precision(self.true_labels, self.preds[i], 0) for i in range(0, self.n)]
-        list_precision_1 = [self.precision(self.true_labels, self.preds[i], 1) for i in range(0, self.n)]
-        list_precision_2 = [self.precision(self.true_labels, self.preds[i], 2) for i in range(0, self.n)]
-        list_recall_0 = [self.recall(self.true_labels, self.preds[i], 0) for i in range(0, self.n)]
-        list_recall_1 = [self.recall(self.true_labels, self.preds[i], 1) for i in range(0, self.n)]
-        list_recall_2 = [self.recall(self.true_labels, self.preds[i], 2) for i in range(0, self.n)]
-        cumulative_accuracy = [sum(list_accuracy[0:i + 1]) / (i + 1) for i in range(0, len(list_accuracy))]
-        cumulative_precision_0 = [sum(list_precision_0[0:i + 1]) / (i + 1) for i in range(0, len(list_precision_0))]
-        cumulative_precision_1 = [sum(list_precision_1[0:i + 1]) / (i + 1) for i in range(0, len(list_precision_1))]
-        cumulative_precision_2 = [sum(list_precision_2[0:i + 1]) / (i + 1) for i in range(0, len(list_precision_2))]
-        cumulative_recall_0 = [sum(list_recall_0[0:i + 1]) / (i + 1) for i in range(0, len(list_recall_0))]
-        cumulative_recall_1 = [sum(list_recall_1[0:i + 1]) / (i + 1) for i in range(0, len(list_recall_1))]
-        cumulative_recall_2 = [sum(list_recall_2[0:i + 1]) / (i + 1) for i in range(0, len(list_recall_2))]
-        metrics.update({'accuracy': cumulative_accuracy,
-                        'precision_0': cumulative_precision_0,
-                        'precision_1': cumulative_precision_1,
-                        'precision_2': cumulative_precision_2,
-                        'recall_0': cumulative_recall_0,
-                        'recall_1': cumulative_recall_1,
-                        'recall_2': cumulative_recall_2
-                        })
+    @staticmethod
+    def calc_cum_mean(non_cum_score_list: List[float]) -> List[float]:
+        cum_score_list = [sum(non_cum_score_list[0:i + 1]) / (i + 1) for i in range(0, len(non_cum_score_list))]
+        return cum_score_list
+
+    def get_final_metrics(self) -> DefaultDict[str, List[float]]:
+        metrics = defaultdict()
+        metrics['accuracy'] = [self.accuracy(self.true_labels, pred) for pred in self.preds]
+        for class_num in self.classes:
+            metrics['precision' + ' ' + str(class_num)] = [self.precision(self.true_labels, pred, class_num)
+                                                           for pred in self.preds]
+            metrics['recall' + ' ' + str(class_num)] = [self.recall(self.true_labels, pred, class_num)
+                                                        for pred in self.preds]
+        for key in metrics.keys():
+            metrics[key] = self.calc_cum_mean(metrics[key])
         assert len(metrics) == 7
         for metric in metrics.values():
             assert len(metric) == self.n
@@ -100,7 +84,7 @@ class ProbsAlgo:
         data = self.metrics
         fig, ax = plt.subplots(len(data), 1, figsize=(10, 7), sharex=True)
         fig.subplots_adjust(hspace=1)
-        for a, key in zip(ax, data.keys()):
+        for a, key in zip(ax, sorted(data.keys())):
             y = data[key]
             a.title.set_text(key)
             a.tick_params(axis='y', which='major', labelsize=7)
