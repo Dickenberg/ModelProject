@@ -47,7 +47,7 @@ class ProbsAlgo:
         assert len(true_labels) == len(predictions)
         assert len(true_labels) > 0
         true_positive = sum(i == j == class_number for i, j in zip(true_labels, predictions))
-        false_positive = sum(i != j and j == class_number for i, j in zip(true_labels, predictions))
+        false_positive = sum(i != class_number and j == class_number for i, j in zip(true_labels, predictions))
         precision_score = true_positive / (true_positive + false_positive)
         return precision_score
 
